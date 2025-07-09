@@ -5,9 +5,11 @@ import pprint
 
 import sdl2.ext
 
-w = 50
-h = 50
-d = 10
+f = 1.0
+
+w = 100
+h = 100
+d = 5
 
 c = []
 hc = []
@@ -20,42 +22,35 @@ for ci in range(100):
 
 src = [[0 for _ in range(w)] for _ in range(h)]
 
-src[18][25] = 99
-src[19][25] = 99
-src[20][25] = 99
-
-src[24][27] = 99
-src[25][27] = 99
-src[26][27] = 99
-
-src[30][23] = 99
-src[31][23] = 99
-src[32][23] = 99
-
-pholo = [0 for i in range(h)]
+pholo = [0 for i in range(h * d)]
 pdst = [[0 for _x in range(w)] for _y in range(h)]
 
 def recount():
 
     holo = [0 for _ in range(h)]
     for ry in range(h):
-        for rx in range(w):
+        for rx in reversed(range(w)):
             if src[ry][rx] > 0:
-                dx = 50 - rx
+                dx = w - rx
                 for hry in range(h):
                     dy = ry - hry
                     hl = dx + math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
-                    ph = math.sin(hl * math.pi)
+                    ph = math.sin(hl * (f * math.pi))
                     # print(hry, hl, ph)
                     holo[hry] = holo[hry] + ph
                 # print("--------")
-    pprint.pp(holo)
+                break
+
+    # pprint.pp(holo)
     minh = min(holo)
     maxh = max(holo)
-    dh = (maxh - minh) / 100.0
-    print(minh, maxh, dh)
+    dh = (maxh - minh) / 99.0
+    # print(minh, maxh, dh)
 
-    pholo = [round((holo[i] - minh) / dh) - 1 for i in range(h)]
+    if dh == 0:
+        dh = 1
+
+    pholo = [round((holo[i] - minh) / dh) for i in range(h)]
 
     print(pholo)
 
@@ -66,10 +61,11 @@ def recount():
             for hry in range(h):
                 dy = ry - hry
                 hl = math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
-                # FIXME: asin !!!
-                ph = math.sin(hl * math.pi)
+                # ph = holo[hry] * (math.sin(hl * (math.pi)))
+                #  ph = ((pholo[hry] / 100) * (math.sin(hl * (math.pi)))) + math.sin(dx * (math.pi))
+                ph = ((pholo[hry] / 100) * (math.sin(hl * (f * math.pi))))
                 dst[ry][dx] = dst[ry][dx] + ph
-        pprint.pp(dst[ry])
+        # pprint.pp(dst[ry])
 
 
     mind = 0.0
@@ -79,10 +75,13 @@ def recount():
             mind = min(mind, dst[ry][rx])
             maxd = max(maxd, dst[ry][rx])
 
-    dd = (maxd - mind) / 100.0
+    dd = (maxd - mind) / 99.0
     print(mind, maxd, dd)
 
-    pdst = [[round((dst[_y][_x] - mind) / dd) - 1 for _x in range(w)] for _y in range(h)]
+    if dd == 0:
+        dd = 1
+
+    pdst = [[round((dst[_y][_x] - mind) / dd) for _x in range(w)] for _y in range(h)]
 
     # pprint.pp(pdst)
 
@@ -93,7 +92,7 @@ def draw_diagram(r):
         for rx in range(w):
             r.fill([rx * d, ry * d, d, d], c[src[ry][rx]])
             r.fill([(rx + w + 1) * d, ry * d, d, d], dc[pdst[ry][rx]])
-        r.fill([50 * d, ry * d, d, d], hc[pholo[ry]])
+        r.fill([w * d, ry * d, d, d], hc[pholo[ry]])
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -121,7 +120,12 @@ if __name__ == '__main__':
                 pprint.pp(sdl2.ext.mouse.mouse_coords())
 
                 x,y = sdl2.ext.mouse.mouse_coords()
-                src[round(y / 10)][round(x / 10)] = 99
+                mx = round(x/d)
+                my = round(y/d)
+
+                for x in range(2):
+                    for y in range(2):
+                        src[my + y][mx + x] = 99
 
                 pholo, pdst = recount()
                 draw_diagram(renderer)
