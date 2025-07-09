@@ -7,9 +7,9 @@ import sdl2.ext
 
 f = 1.0
 
-w = 100
-h = 100
-d = 5
+w = 50
+h = 50
+d = 10
 
 c = []
 hc = []
@@ -27,7 +27,7 @@ pdst = [[0 for _x in range(w)] for _y in range(h)]
 
 def recount():
 
-    holo = [0 for _ in range(h)]
+    holo = [[0,0] for _ in range(h)]
     for ry in range(h):
         for rx in reversed(range(w)):
             if src[ry][rx] > 0:
@@ -35,22 +35,26 @@ def recount():
                 for hry in range(h):
                     dy = ry - hry
                     hl = dx + math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
-                    ph = math.sin(hl * (f * math.pi))
-                    # print(hry, hl, ph)
-                    holo[hry] = holo[hry] + ph
+                    holo[hry][0] = holo[hry][0] + math.sin(hl * (f * math.pi))
+                    holo[hry][1] = holo[hry][1] + math.cos(hl * (f * math.pi))
                 # print("--------")
                 break
 
     # pprint.pp(holo)
-    minh = min(holo)
-    maxh = max(holo)
+    minh = 0.0
+    maxh = 0.0
+    for s,c in holo:
+        amp = math.sqrt(math.pow(s, 2) + math.pow(c, 2))
+        minh = min(amp, minh)
+        maxh = max(amp, maxh)
+
     dh = (maxh - minh) / 99.0
-    # print(minh, maxh, dh)
+    print(minh, maxh, dh)
 
     if dh == 0:
         dh = 1
 
-    pholo = [round((holo[i] - minh) / dh) for i in range(h)]
+    pholo = [round((math.sqrt(math.pow(holo[i][0], 2) + math.pow(holo[i][1], 2)) - minh) / dh) for i in range(h)]
 
     print(pholo)
 
@@ -107,6 +111,7 @@ if __name__ == '__main__':
     renderer.present()
 
     running = True
+    need_update = True
     while running:
         for e in sdl2.ext.get_events():
             if e.type == sdl2.SDL_QUIT:
@@ -130,7 +135,10 @@ if __name__ == '__main__':
                 pholo, pdst = recount()
                 draw_diagram(renderer)
                 renderer.present()
+                need_update = True
 
             # pprint.pp(e.type)
-        window.refresh()
+        if need_update:
+            window.refresh()
+            need_update = False
         sleep(0.01)
