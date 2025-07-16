@@ -27,6 +27,8 @@ pdst = [[0 for _x in range(w)] for _y in range(h)]
 
 def recount():
 
+    print("----------")
+
     holo = [[0,0] for _ in range(h)]
     for ry in range(h):
         for rx in reversed(range(w)):
@@ -35,8 +37,8 @@ def recount():
                 for hry in range(h):
                     dy = ry - hry
                     hl = dx + math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
-                    holo[hry][0] = holo[hry][0] + math.sin(hl * (f * math.pi))
-                    holo[hry][1] = holo[hry][1] + math.cos(hl * (f * math.pi))
+                    holo[hry][0] = holo[hry][0] + math.sin(hl / (f * math.pi))
+                    holo[hry][1] = holo[hry][1] + math.cos(hl / (f * math.pi))
                 # print("--------")
                 break
 
@@ -67,7 +69,18 @@ def recount():
                 hl = math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
                 # ph = holo[hry] * (math.sin(hl * (math.pi)))
                 #  ph = ((pholo[hry] / 100) * (math.sin(hl * (math.pi)))) + math.sin(dx * (math.pi))
+
+
+                r = math.sqrt(math.pow(holo[hry][0], 2) + math.pow(holo[hry][1], 2))
+                fi = math.atan2(holo[hry][0], holo[hry][1]) # FIXME, maybe wrong order
+                if fi < 0.0:
+                    fi = (fi + (math.pi * 2))
+
+
                 ph = ((pholo[hry] / 100) * (math.sin(hl * (f * math.pi))))
+
+
+
                 dst[ry][dx] = dst[ry][dx] + ph
         # pprint.pp(dst[ry])
 
